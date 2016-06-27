@@ -1,8 +1,6 @@
 <?php
 
 require_once('./Services/Table/classes/class.ilTable2GUI.php');
-require_once('./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SynthesEdu/classes/User/class.ilSynthesEduUser.php');
-require_once('./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SynthesEdu/classes/Export/class.ilSynthesEduExportExcelGeneric.php');
 
 /**
  * Class xconAgreedUsersTable
@@ -12,10 +10,9 @@ require_once('./Customizing/global/plugins/Services/UIComponent/UserInterfaceHoo
 class xconAgreedUsersTable extends ilTable2GUI
 {
 
-    const EXPORT_EXCEL_FORMATTED = 101;
 
     /**
-     * @var ilSynthesEduUser
+     * @var ilObjUser
      */
     protected $user;
 
@@ -40,11 +37,6 @@ class xconAgreedUsersTable extends ilTable2GUI
     protected $filter = array();
 
     /**
-     * @var string
-     */
-    protected $class_export_xls = 'ilSynthesEduExportExcelGeneric';
-
-    /**
      * All possible columns to display
      *
      * @var array
@@ -54,7 +46,6 @@ class xconAgreedUsersTable extends ilTable2GUI
         'firstname',
         'lastname',
         'email',
-        'country',
         'agree_date',
     );
 
@@ -68,7 +59,6 @@ class xconAgreedUsersTable extends ilTable2GUI
         'firstname' => true,
         'lastname' => true,
         'email' => true,
-        'country' => true,
         'agree_date' => true,
     );
 
@@ -89,9 +79,8 @@ class xconAgreedUsersTable extends ilTable2GUI
 
         $this->ctrl = $ilCtrl;
         $this->lng = $lng;
-        $this->user = ilSynthesEduUser::getInstanceByObjId($ilUser->getId());
+        $this->user = $ilUser;
         $this->pl = ilConsentPlugin::getInstance();
-        $this->export_formats[self::EXPORT_EXCEL_FORMATTED] = $this->pl->getPrefix() . '_' . 'report_excel_formatted';
         parent::__construct($a_parent_obj, $a_parent_cmd, '');
         $this->consent = $consent;
         $this->setRowTemplate('tpl.row_generic.html', $this->pl->getDirectory());
@@ -112,32 +101,6 @@ class xconAgreedUsersTable extends ilTable2GUI
         }
 
         return $columns;
-    }
-
-
-    /**
-     * Execute custom exports
-     *
-     * @param int $format
-     * @param bool $send
-     */
-    public function exportData($format, $send = false)
-    {
-        switch ($format) {
-            case static::EXPORT_EXCEL_FORMATTED:
-                $columns = $this->getColumnsForFormattedExcelExport();
-                $data = $this->getDataForFormattedExcelExport();
-                $class = $this->class_export_xls;
-                $export = new $class($data, $columns);
-                $export->setTitle(sprintf($this->pl->txt('report_excel_formatted_title'), $this->consent->getCourse()->getTitle()));
-                $export->execute();
-                if ($send) {
-                    exit();
-                }
-                break;
-            default:
-                parent::exportData($format, $send);
-        }
     }
 
 
@@ -167,13 +130,31 @@ class xconAgreedUsersTable extends ilTable2GUI
     {
         switch ($col) {
             case 'agree_date':
-                $value = ($value) ? date($this->user->getDateFormat() . ', ' . $this->user->getTimeFormat(), strtotime($value)) : '-';
+                $value = ($value) ? date($this->getDateFormat() . ', ' . 'H:i', strtotime($value)) : '-';
                 break;
             default:
                 $value = ($value) ? $value : "&nbsp;";
         }
 
         return $value;
+    }
+
+
+    /**
+     * Return the date format which is used to format dates for all plugins
+     *
+     * @return string
+     */
+    public function getDateFormat()
+    {
+        switch ($this->user->getDateFormat()) {
+            case ilCalendarSettings::DATE_FORMAT_DMY:
+                return 'd.m.Y';
+            case ilCalendarSettings::DATE_FORMAT_YMD:
+                return 'Y-m-d';
+            default:
+                return 'Y-m-d';
+        }
     }
 
 
@@ -245,6 +226,7 @@ class xconAgreedUsersTable extends ilTable2GUI
         }
         if (!count($ids)) {
             $this->setData(array());
+
             return;
         }
         $set = $ilDB->query("SELECT usr_id, login, firstname, lastname, email FROM usr_data WHERE usr_id IN (" . implode(',', $ids) . ")");
@@ -255,39 +237,4 @@ class xconAgreedUsersTable extends ilTable2GUI
         }
         $this->setData($data);
     }
-
-
-    /**
-     * @return array
-     */
-    protected function getColumnsForFormattedExcelExport()
-    {
-        $columns = array();
-        foreach ($this->getSelectableColumns() as $key => $column) {
-            if ($this->isColumnSelected($key)) {
-                $columns[$key] = $column['txt'];
-            }
-        }
-
-        return $columns;
-    }
-
-
-    /**
-     * @return array
-     */
-    protected function getDataForFormattedExcelExport()
-    {
-        $data = array();
-        foreach ($this->getData() as $_data) {
-            $row = array();
-            foreach ($_data as $key => $value) {
-                $row[$key] = $this->sanitizeValueForExport($this->getFormattedValue($value, $key));
-            }
-            $data[] = $row;
-        }
-
-        return $data;
-    }
-
 } 

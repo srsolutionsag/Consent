@@ -20,7 +20,7 @@ msg_error_accepted#:#Error accepting the consent
 accepted_on#:#Agreed on %s
 tab_agreed#:#Agreed
 agree_date#:#Agree date
-login#:#WWID
+login#:#Login
 firstname#:#Firstname
 lastname#:#Lastname
 email#:#E-Mail
