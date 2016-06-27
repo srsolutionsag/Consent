@@ -1,0 +1,29 @@
+obj_xcon#:#Consent
+objs_xcon#:#Consents
+obj_xcon_duplicate#:#Copy
+objs_xcon_duplicate#:#Copy Consent
+obj_xcon_select#:#Select Consent
+xcon_add#:#Add Consent
+xcon_new#:#Add New Consent
+xcon_read#:#Read access to Consent
+xcon_write#:#Edit Consent
+xcon_delete#:#Delete Consent
+xcon_visible#:#Consent is visible
+xcon_edit_permission#:#Change permission settings
+xcon_edit#:#Edit
+content#:#Overview
+default_description_consent#:#This is the default text for the consent.
+default_title_consent#:#Consent
+accept#:#Agree
+msg_success_accepted#:#Successfuly accepted the consent
+msg_error_accepted#:#Error accepting the consent
+accepted_on#:#Agreed on %s
+tab_agreed#:#Agreed
+agree_date#:#Agree date
+login#:#WWID
+firstname#:#Firstname
+lastname#:#Lastname
+email#:#E-Mail
+country#:#Country
+report_excel_formatted#:#Excel formatted
+report_excel_formatted_title#:#Consent of course "%s"

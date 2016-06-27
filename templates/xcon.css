@@ -1,0 +1,9 @@
+.xcon-wrapper .panel {
+    background: #ffffff;
+    box-shadow: 3px 3px 4px #d0d0d0;
+    border: 1px solid #cccccc;
+}
+
+.xcon-list-wrapper {
+    width: 75%;
+}
