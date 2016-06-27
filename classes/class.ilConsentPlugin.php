@@ -51,4 +51,9 @@ class ilConsentPlugin extends ilRepositoryObjectPlugin
 
         return static::$instance;
     }
+
+
+    protected function uninstallCustom()
+    {
+    }
 }

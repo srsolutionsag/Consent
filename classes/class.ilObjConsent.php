@@ -4,6 +4,7 @@ require_once(dirname(__FILE__) . '/class.xconUserConsent.php');
 include_once("./Services/Repository/classes/class.ilObjectPlugin.php");
 require_once('./Services/Tracking/interfaces/interface.ilLPStatusPlugin.php');
 require_once('./Services/Tracking/classes/status/class.ilLPStatusCollection.php');
+require_once('./Modules/Course/classes/class.ilObjCourse.php');
 
 /**
  * Class ilObjConsent
