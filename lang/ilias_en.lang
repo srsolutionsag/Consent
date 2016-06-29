@@ -17,6 +17,7 @@ default_title_consent#:#Consent
 accept#:#Agree
 msg_success_accepted#:#Successfuly accepted the consent
 msg_error_accepted#:#Error accepting the consent
+msg_error_no_crs#:#Consent must be created directly in a course
 accepted_on#:#Agreed on %s
 tab_agreed#:#Agreed
 agree_date#:#Agree date
@@ -24,6 +25,3 @@ login#:#Login
 firstname#:#Firstname
 lastname#:#Lastname
 email#:#E-Mail
-country#:#Country
-report_excel_formatted#:#Excel formatted
-report_excel_formatted_title#:#Consent of course "%s"

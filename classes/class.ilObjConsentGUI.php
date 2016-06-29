@@ -250,16 +250,33 @@ class ilObjConsentGUI extends ilObjectPluginGUI
         return 'index';
     }
 
+    
+    protected function initCreationForms($a_new_type)
+    {
+        $forms = parent::initCreationForms($a_new_type);
+        unset($forms[self::CFORM_CLONE]);
+
+        return $forms;
+    }
+
 
     public function initCreateForm($a_new_type)
     {
-        $form = parent::initCreateForm($a_new_type);
-        $item = $form->getItemByPostVar('title');
-        /** @var ilTextInputGUI $item */
-        $item->setValue($this->txt('default_title_consent'));
-        /** @var ilTextAreaInputGUI $item */
-        $item = $form->getItemByPostVar('desc');
-        $item->setValue($this->txt('default_description_consent'));
+        // Consent object must exist in course!
+        if (ilObject::_lookupType((int) $_GET['ref_id'], true) != 'crs') {
+//            throw new ilException($this->pl->txt('msg_exception_no_crs'));
+            ilUtil::sendFailure($this->pl->txt('msg_error_no_crs'));
+            require_once('./Services/Form/classes/class.ilPropertyFormGUI.php');
+            $form = new ilPropertyFormGUI();
+        } else {
+            $form = parent::initCreateForm($a_new_type);
+            $item = $form->getItemByPostVar('title');
+            /** @var ilTextInputGUI $item */
+            $item->setValue($this->txt('default_title_consent'));
+            /** @var ilTextAreaInputGUI $item */
+            $item = $form->getItemByPostVar('desc');
+            $item->setValue($this->txt('default_description_consent'));
+        }
 
         return $form;
     }

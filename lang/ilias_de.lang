@@ -1,0 +1,27 @@
+obj_xcon#:#Selbstdeklaration
+objs_xcon#:#Selbstdeklarationen
+obj_xcon_duplicate#:#Kopie
+objs_xcon_duplicate#:#Selbstdeklaration kopieren
+obj_xcon_select#:#Selbstdeklaration auswählen
+xcon_add#:#Selbstdeklaration erstellen
+xcon_new#:#Selbstdeklaration hinzufügen
+xcon_read#:#Lesezugriff Selbstdeklaration
+xcon_write#:#Selbstdeklaration bearbeiten
+xcon_delete#:#Selbstdeklaration löschen
+xcon_visible#:#Selbstdeklaration ist sichtbar
+xcon_edit_permission#:#Rechteeinstellungen ändern
+xcon_edit#:#Bearbeiten
+content#:#Inhalt
+default_description_consent#:#(Selbstdeklarationstext einfügen)
+default_title_consent#:#Selbstdeklaration
+accept#:#Bestätigen
+msg_success_accepted#:#Selbstdeklaration bestätigt
+msg_error_accepted#:#Fehler bei der Bestätigung der Selbstdeklaration
+msg_error_no_crs#:#Selbstdeklaration kann nur direkt in einem Kurs erstellt werden
+accepted_on#:#Bestätigt am %s
+tab_agreed#:#Bestätigt
+agree_date#:#Datum Bestätigung
+login#:#Login
+firstname#:#Vorname
+lastname#:#Name
+email#:#E-Mail
