@@ -1,6 +1,8 @@
 <?php
 
-require_once('./Services/Table/classes/class.ilTable2GUI.php');
+require_once __DIR__.'/../vendor/autoload.php';
+
+use srag\DIC\DICTrait;
 
 /**
  * Class xconAgreedUsersTable
@@ -10,57 +12,40 @@ require_once('./Services/Table/classes/class.ilTable2GUI.php');
 class xconAgreedUsersTable extends ilTable2GUI
 {
 
+	use DICTrait;
 
-    /**
-     * @var ilObjUser
-     */
-    protected $user;
-
-    /**
-     * @var ilConsentPlugin
-     */
-    protected $pl;
-
-    /**
-     * @var ilCtrl
-     */
-    protected $ctrl;
-
-    /**
-     * @var ilLanguage
-     */
-    protected $lng;
+	const PLUGIN_CLASS_NAME = ilConsentPlugin::class;
 
     /**
      * @var array
      */
-    protected $filter = array();
+    protected $filter = [];
 
     /**
      * All possible columns to display
      *
      * @var array
      */
-    protected static $available_columns = array(
+    protected static $available_columns = [
         'login',
         'firstname',
         'lastname',
         'email',
         'agree_date',
-    );
+    ];
 
     /**
      * Columns displayed by table with default visibility
      *
      * @var array
      */
-    protected $columns = array(
+    protected $columns = [
         'login' => true,
         'firstname' => true,
         'lastname' => true,
         'email' => true,
         'agree_date' => true,
-    );
+    ];
 
     /**
      * @var ilObjConsent
@@ -75,16 +60,10 @@ class xconAgreedUsersTable extends ilTable2GUI
      */
     public function __construct($a_parent_obj, $a_parent_cmd = "", ilObjConsent $consent)
     {
-        global $ilCtrl, $ilUser, $lng;
-
-        $this->ctrl = $ilCtrl;
-        $this->lng = $lng;
-        $this->user = $ilUser;
-        $this->pl = ilConsentPlugin::getInstance();
         parent::__construct($a_parent_obj, $a_parent_cmd, '');
         $this->consent = $consent;
-        $this->setRowTemplate('tpl.row_generic.html', $this->pl->getDirectory());
-        $this->setFormAction($this->ctrl->getFormAction($a_parent_obj));
+        $this->setRowTemplate('tpl.row_generic.html', self::plugin()->directory());
+        $this->setFormAction(self::dic()->ctrl()->getFormAction($a_parent_obj));
         $this->addColumns();
         $this->buildData();
     }
@@ -95,9 +74,9 @@ class xconAgreedUsersTable extends ilTable2GUI
      */
     public function getSelectableColumns()
     {
-        $columns = array();
+        $columns = [];
         foreach ($this->columns as $column => $selectable) {
-            $columns[$column] = array('txt' => $this->pl->txt($column), 'default' => $selectable);
+            $columns[$column] = ['txt' => self::plugin()->translate($column), 'default' => $selectable];
         }
 
         return $columns;
@@ -112,7 +91,7 @@ class xconAgreedUsersTable extends ilTable2GUI
     {
         foreach (array_keys($this->columns) as $col) {
             if (in_array($col, self::$available_columns) && $this->isColumnSelected($col)) {
-                $this->addColumn($this->pl->txt($col), $col);
+                $this->addColumn(self::plugin()->translate($col), $col);
             }
         }
 
@@ -147,7 +126,7 @@ class xconAgreedUsersTable extends ilTable2GUI
      */
     public function getDateFormat()
     {
-        switch ($this->user->getDateFormat()) {
+        switch (self::dic()->user()->getDateFormat()) {
             case ilCalendarSettings::DATE_FORMAT_DMY:
                 return 'd.m.Y';
             case ilCalendarSettings::DATE_FORMAT_YMD:
@@ -161,7 +140,7 @@ class xconAgreedUsersTable extends ilTable2GUI
     /**
      * @param array $a_set
      */
-    protected function fillRow(array $a_set)
+    protected function fillRow($a_set)
     {
         foreach (array_keys($this->columns) as $col) {
             if ($this->isColumnSelected($col)) {
@@ -193,13 +172,13 @@ class xconAgreedUsersTable extends ilTable2GUI
     }
 
 
-    protected function fillRowExcel($a_worksheet, &$a_row, $a_set)
+    protected function fillRowExcel(ilExcel $a_excel, &$a_row, $a_set)
     {
         $col = 0;
         foreach (array_keys($this->columns) as $column) {
             if ($this->isColumnSelected($column)) {
                 $value = $this->getFormattedValue($a_set[$column], $column);
-                $a_worksheet->write($a_row, $col, $this->sanitizeValueForExport($value));
+                $a_excel->setCell($a_row, $col, $this->sanitizeValueForExport($value));
                 $col++;
             }
         }
@@ -212,25 +191,23 @@ class xconAgreedUsersTable extends ilTable2GUI
      */
     protected function buildData()
     {
-        global $ilDB;
-
-        $rows = xconUserConsent::where(array(
+        $rows = xconUserConsent::where([
                 'obj_id' => $this->consent->getId(),
                 'status' => xconUserConsent::STATUS_ACCEPTED
-            )
+            ]
         )->getArray('user_id');
-        $data = array();
-        $ids = array();
+        $data = [];
+        $ids = [];
         foreach ($rows as $row) {
             $ids[] = $row['user_id'];
         }
         if (!count($ids)) {
-            $this->setData(array());
+            $this->setData([]);
 
             return;
         }
-        $set = $ilDB->query("SELECT usr_id, login, firstname, lastname, email FROM usr_data WHERE usr_id IN (" . implode(',', $ids) . ")");
-        while ($row = $ilDB->fetchAssoc($set)) {
+        $set = self::dic()->database()->query("SELECT usr_id, login, firstname, lastname, email FROM usr_data WHERE usr_id IN (" . implode(',', $ids) . ")");
+        while ($row = self::dic()->database()->fetchAssoc($set)) {
             $tmp = $row;
             $tmp['agree_date'] = $rows[$row['usr_id']]['updated_at'];
             $data[] = $tmp;

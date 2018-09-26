@@ -1,5 +1,9 @@
 <?php
 
+require_once __DIR__.'/../vendor/autoload.php';
+
+use srag\DIC\DICTrait;
+
 /**
  * Class xconUserConsent
  *
@@ -7,6 +11,10 @@
  */
 class xconUserConsent extends ActiveRecord
 {
+
+	use DICTrait;
+
+	const PLUGIN_CLASS_NAME = ilConsentPlugin::class;
 
     const TABLE_NAME = 'xcon_user_consent';
 
@@ -112,22 +120,18 @@ class xconUserConsent extends ActiveRecord
 
     public function create()
     {
-        global $ilUser;
-
         $this->created_at = date('Y-m-d H:i:s');
         $this->updated_at = date('Y-m-d H:i:s');
-        $this->created_user_id = $ilUser->getId();
-        $this->updated_user_id = $ilUser->getId();
+        $this->created_user_id = self::dic()->user()->getId();
+        $this->updated_user_id = self::dic()->user()->getId();
         parent::create();
     }
 
 
     public function update()
     {
-        global $ilUser;
-
         $this->updated_at = date('Y-m-d H:i:s');
-        $this->updated_user_id = $ilUser->getId();
+        $this->updated_user_id = self::dic()->user()->getId();
         parent::update();
     }
 

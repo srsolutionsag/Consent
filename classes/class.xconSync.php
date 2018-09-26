@@ -1,6 +1,8 @@
 <?php
 
-require_once('./Services/Tracking/classes/class.ilLPStatusWrapper.php');
+require_once __DIR__.'/../vendor/autoload.php';
+
+use srag\DIC\DICTrait;
 
 /**
  * Class xconSync
@@ -9,6 +11,10 @@ require_once('./Services/Tracking/classes/class.ilLPStatusWrapper.php');
  */
 class xconSync
 {
+
+	use DICTrait;
+
+	const PLUGIN_CLASS_NAME = ilConsentPlugin::class;
 
     /**
      * @var xconUserConsent
@@ -29,10 +35,8 @@ class xconSync
      */
     public function accept()
     {
-        global $ilUser;
-
         // Currently only the user herself can accept...
-        if ($this->consent->getUserId() != $ilUser->getId()) {
+        if ($this->consent->getUserId() != self::dic()->user()->getId()) {
             return false;
         }
         $this->consent->setStatus(xconUserConsent::STATUS_ACCEPTED);

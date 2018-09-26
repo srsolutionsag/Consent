@@ -1,0 +1,52 @@
+{
+    "name": "srag/plugins/Consent",
+    "description": "ILIAS Consent plugin",
+    "type": "project",
+    "license": "GPL-3.0+",
+    "keywords": [
+        "ILIAS",
+        "Plugin",
+        "Consent"
+    ],
+    "homepage": "https://git.studer-raimann.ch/ILIAS/Plugins/Consent",
+    "authors": [
+        {
+            "name": "studer + raimann ag - Team Core 1",
+            "email": "support-core1@studer-raimann.ch",
+            "homepage": "https://studer-raimann.ch",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+      "email": "support-core1@studer-raimann.ch"
+    },
+    "autoload": {
+        "classmap": [
+            "./classes/",
+            "../../../../../../../Services/ActiveRecord/class.ActiveRecord.php",
+            "../../../../../../../Services/Repository/classes/class.ilRepositoryObjectPlugin.php",
+            "../../../../../../../Services/Repository/classes/class.ilObjectPlugin.php",
+            "../../../../../../../Services/Tracking/interfaces/interface.ilLPStatusPlugin.php",
+            "../../../../../../../Services/Tracking/classes/status/class.ilLPStatusCollection.php",
+            "../../../../../../../Modules/Course/classes/class.ilObjCourse.php",
+            "../../../../../../../Services/Repository/classes/class.ilObjectPluginAccess.php",
+            "../../../../../../../Services/Repository/classes/class.ilObjectPluginGUI.php",
+            "../../../../../../../Services/UIComponent/Button/classes/class.ilSubmitButton.php",
+            "../../../../../../../Services/Repository/classes/class.ilObjectPluginListGUI.php",
+            "../../../../../../../Services/UIComponent/Button/classes/class.ilLinkButton.php",
+            "../../../../../../../Services/Table/classes/class.ilTable2GUI.php",
+            "../../../../../../../Services/Tracking/classes/class.ilLPStatusWrapper.php"
+
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "classmap-authoritative": true
+    },
+    "require": {
+        "srag/dic": ">=0.1.0",
+        "srag/activerecordconfig": ">=0.1.0",
+        "srag/removeplugindataconfirm": ">=0.1.0"
+    }
+}

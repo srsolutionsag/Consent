@@ -1,13 +1,8 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php");
+require_once __DIR__.'/../vendor/autoload.php';
 
-// Include ActiveRecord base class, in ILIAS >= 4.5 use ActiveRecord from Core
-if (is_file('./Services/ActiveRecord/class.ActiveRecord.php')) {
-    require_once('./Services/ActiveRecord/class.ActiveRecord.php');
-} elseif (is_file('./Customizing/global/plugins/Libraries/ActiveRecord/class.ActiveRecord.php')) {
-    require_once('./Customizing/global/plugins/Libraries/ActiveRecord/class.ActiveRecord.php');
-}
+use srag\RemovePluginDataConfirm\RepositoryObjectPluginUninstallTrait;
 
 /**
  * Class ilConsentPlugin
@@ -16,10 +11,18 @@ if (is_file('./Services/ActiveRecord/class.ActiveRecord.php')) {
  */
 class ilConsentPlugin extends ilRepositoryObjectPlugin
 {
+	use RepositoryObjectPluginUninstallTrait;
+	//...
+	const PLUGIN_CLASS_NAME = self::class;
+	const REMOVE_PLUGIN_DATA_CONFIRM_CLASS_NAME = ilConsentRemoveDataConfirm::class;
+	const PLUGIN_ID = 'xcon';
+    const PLUGIN_NAME = 'Consent';
 
-    const TYPE = 'xcon';
+	/**
 
-    private static $instance;
+	* @var self|null
+	*/
+	protected static $instance = NULL;
 
 
     /**
@@ -27,33 +30,35 @@ class ilConsentPlugin extends ilRepositoryObjectPlugin
      */
     public function getPluginName()
     {
-        return "Consent";
+        return self::PLUGIN_NAME;
     }
-
 
     protected function init()
     {
         parent::init();
-        if (isset($_GET['ulx'])) {
+        $ulx = filter_input(INPUT_GET, "ulx");
+        if (isset($ulx)) {
             $this->updateLanguages();
         }
     }
 
 
-    /**
-     * @return ilEvaluationOverviewPlugin
-     */
-    public static function getInstance()
-    {
-        if (static::$instance === null) {
-            static::$instance = new static();
-        }
+	/**
+	 * @return self
+	 */
+	public static function getInstance() {
+		if (self::$instance === NULL) {
+			self::$instance = new self();
+		}
 
-        return static::$instance;
-    }
+		return self::$instance;
+	}
 
-
-    protected function uninstallCustom()
-    {
-    }
+	/**
+	 * @inheritdoc
+	 */
+	protected function deleteData()/*: void*/ {
+		self::dic()->database()->dropTable(ConsentConfig::TABLE_NAME, false);
+		self::dic()->database()->dropTable(xconUserConsent::TABLE_NAME, false);
+	}
 }

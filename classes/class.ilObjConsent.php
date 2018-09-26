@@ -1,10 +1,8 @@
 <?php
-require_once(dirname(__FILE__) . '/class.ilConsentPlugin.php');
-require_once(dirname(__FILE__) . '/class.xconUserConsent.php');
-include_once("./Services/Repository/classes/class.ilObjectPlugin.php");
-require_once('./Services/Tracking/interfaces/interface.ilLPStatusPlugin.php');
-require_once('./Services/Tracking/classes/status/class.ilLPStatusCollection.php');
-require_once('./Modules/Course/classes/class.ilObjCourse.php');
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+use srag\DIC\DICTrait;
 
 /**
  * Class ilObjConsent
@@ -13,6 +11,10 @@ require_once('./Modules/Course/classes/class.ilObjCourse.php');
  */
 class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
 {
+
+	use DICTrait;
+
+	const PLUGIN_CLASS_NAME = ilConsentPlugin::class;
 
     /**
      * @var ilObjCourse;
@@ -34,7 +36,7 @@ class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
      */
     public final function initType()
     {
-        $this->setType(ilConsentPlugin::TYPE);
+        $this->setType(ilConsentPlugin::PLUGIN_ID);
     }
 
 
@@ -45,10 +47,10 @@ class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
      */
     public function getLPCompleted()
     {
-        return xconUserConsent::where(array(
+        return xconUserConsent::where([
             'course_obj_id' => $this->getCourse()->getId(),
             'status' => xconUserConsent::STATUS_ACCEPTED,
-        ))->getArray(null, 'user_id');
+        ])->getArray(null, 'user_id');
     }
 
 
@@ -76,7 +78,7 @@ class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
      */
     public function getLPFailed()
     {
-        return array();
+        return [];
     }
 
 
@@ -87,7 +89,7 @@ class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
      */
     public function getLPInProgress()
     {
-        return array();
+        return [];
     }
 
 
@@ -99,10 +101,10 @@ class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
      */
     public function getLPStatusForUser($a_user_id)
     {
-        $user_consent = xconUserConsent::where(array(
+        $user_consent = xconUserConsent::where([
             'user_id' => $a_user_id,
             'obj_id' => $this->getId(),
-            'status' => xconUserConsent::STATUS_ACCEPTED)
+            'status' => xconUserConsent::STATUS_ACCEPTED]
         )->first();
 
         return ($user_consent) ? ilLPStatus::LP_STATUS_COMPLETED_NUM : ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM;
@@ -115,12 +117,11 @@ class ilObjConsent extends ilObjectPlugin implements ilLPStatusPluginInterface
     public function getCourse()
     {
         if ($this->course === null) {
-            global $tree;
             $ref_id = $this->getRefId();
             if ($ref_id) {
-                $course_ref_id = $tree->getParentId($ref_id);
+                $course_ref_id = self::dic()->tree()->getParentId($ref_id);
             } else {
-                $course_ref_id = (int) $_GET['ref_id'];
+                $course_ref_id = (int) filter_input(INPUT_GET, "ref_id");
             }
             $this->course = new ilObjCourse($course_ref_id);
         }

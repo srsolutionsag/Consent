@@ -1,9 +1,8 @@
 <?php
 
-require_once(dirname(__FILE__) . '/class.ilConsentPlugin.php');
-require_once(dirname(__FILE__) . '/class.ilObjConsent.php');
-include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
-require_once('./Services/UIComponent/Button/classes/class.ilLinkButton.php');
+require_once __DIR__.'/../vendor/autoload.php';
+
+use srag\DIC\DICTrait;
 
 /**
  * Class ilObjConsentListGUI
@@ -12,19 +11,22 @@ require_once('./Services/UIComponent/Button/classes/class.ilLinkButton.php');
  */
 class ilObjConsentListGUI extends ilObjectPluginListGUI
 {
+	use DICTrait;
+
+	const PLUGIN_CLASS_NAME = ilConsentPlugin::class;
+
 	/**
 	* Init type
 	*/
 	function initType()
 	{
-        $this->setType(ilConsentPlugin::TYPE);
+        $this->setType(ilConsentPlugin::PLUGIN_ID);
 		// Hacky: Can't overwrite init() cause this method is final -.-
 		$this->cut_enabled = false;
 		$this->copy_enabled = false;
 		$this->link_enabled = false;
 		$this->progress_enabled = false;
-        global $tpl;
-        $tpl->addCss(ilConsentPlugin::getInstance()->getDirectory() . '/templates/xcon.css');
+        self::dic()->ui()->mainTemplate()->addCss(self::plugin()->directory() . '/templates/xcon.css');
 	}
 	
 	/**
@@ -40,18 +42,18 @@ class ilObjConsentListGUI extends ilObjectPluginListGUI
 	*/
 	function initCommands()
 	{
-		return array
-		(
-			array(
+		return
+		[
+			[
 				"permission" => "read",
 				"cmd" => "showContent",
-				"default" => true),
-			array(
+				"default" => true],
+			[
 				"permission" => "write",
 				"cmd" => "edit",
 				"txt" => $this->txt("xcon_edit"),
-				"default" => false),
-		);
+				"default" => false],
+		];
 	}
 
 
@@ -60,11 +62,9 @@ class ilObjConsentListGUI extends ilObjectPluginListGUI
      */
     protected function getUserConsent()
     {
-        global $ilUser;
-
-        $user_consent = xconUserConsent::where(array(
-            'user_id' => $ilUser->getId(),
-            'obj_id' => $this->obj_id))
+        $user_consent = xconUserConsent::where([
+            'user_id' => self::dic()->user()->getId(),
+            'obj_id' => $this->obj_id])
             ->first();
         if (!$user_consent) {
             $user_consent = new xconUserConsent();
@@ -86,19 +86,19 @@ class ilObjConsentListGUI extends ilObjectPluginListGUI
 	{
         $consent = $this->getUserConsent();
         if ($consent->getStatus() == xconUserConsent::STATUS_ACCEPTED) {
-            return array();
+            return [];
         }
         $button = ilLinkButton::getInstance();
         $button->setCaption($this->txt('accept'), false);
         $ref_id = array_pop(ilObject::_getAllReferences($this->obj_id));
         $this->ctrl->setParameterByClass('ilobjconsentgui', 'ref_id', $ref_id);
         $button->setUrl($this->ctrl->getLinkTargetByClass('ilobjconsentgui', 'accept'));
-        return array(
-			array(
+        return [
+			[
 				'property' => '',
 				'value' => $button->render(),
-			)
-		);
+			]
+        ];
 	}
 
 

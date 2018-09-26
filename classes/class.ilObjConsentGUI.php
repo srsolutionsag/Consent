@@ -1,12 +1,8 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
-require_once(dirname(__FILE__) . '/class.ilConsentPlugin.php');
-require_once(dirname(__FILE__) . '/class.ilObjConsentAccess.php');
-require_once(dirname(__FILE__) . '/class.xconUserConsent.php');
-require_once(dirname(__FILE__) . '/class.xconSync.php');
-require_once('./Services/UIComponent/Button/classes/class.ilSubmitButton.php');
-require_once('class.xconAgreedUsersTable.php');
+require_once __DIR__.'/../vendor/autoload.php';
+
+use srag\DIC\DICTrait;
 
 /**
  * Class ilObjConsentGUI
@@ -19,35 +15,9 @@ require_once('class.xconAgreedUsersTable.php');
 class ilObjConsentGUI extends ilObjectPluginGUI
 {
 
-    /**
-     * @var ilTabsGUI
-     */
-    protected $tabs;
+	use DICTrait;
 
-    /**
-     * @var ilToolbarGUI
-     */
-    protected $toolbar;
-
-    /**
-     * @var ilConsentPlugin
-     */
-    protected $pl;
-
-    /**
-     * @var ilAccessHandler
-     */
-    protected $access;
-
-    /**
-     * @var ilCtrl
-     */
-    protected $ctrl;
-
-    /**
-     * @var ilObjUser
-     */
-    protected $user;
+	const PLUGIN_CLASS_NAME = ilConsentPlugin::class;
 
     /**
      * @var ilObjConsent
@@ -62,18 +32,9 @@ class ilObjConsentGUI extends ilObjectPluginGUI
      */
     function __construct($a_ref_id = 0, $a_id_type = self::REPOSITORY_NODE_ID, $a_parent_node_id = 0)
     {
-        global $ilCtrl, $tpl, $ilTabs, $ilToolbar, $ilAccess, $ilUser;
-
         parent::__construct($a_ref_id, $a_id_type, $a_parent_node_id);
 
-        $this->ctrl = $ilCtrl;
-        $this->access = $ilAccess;
-        $this->tpl = $tpl;
-        $this->tabs = $ilTabs;
-        $this->toolbar = $ilToolbar;
-        $this->pl = ilConsentPlugin::getInstance();
-        $this->user = $ilUser;
-        $this->tpl->addCss($this->pl->getDirectory() . '/templates/xcon.css');
+        self::dic()->ui()->mainTemplate()->addCss(self::plugin()->directory() . '/templates/xcon.css');
     }
 
 
@@ -82,7 +43,7 @@ class ilObjConsentGUI extends ilObjectPluginGUI
      */
     public final function getType()
     {
-        return ilConsentPlugin::TYPE;
+        return ilConsentPlugin::PLUGIN_ID;
     }
 
 
@@ -95,15 +56,15 @@ class ilObjConsentGUI extends ilObjectPluginGUI
             case 'showContent':
             case 'index':
                 $this->index();
-                $this->tabs->setTabActive('content');
+                self::dic()->tabs()->activateTab('content');
                 break;
             case 'edit':
                 $this->edit();
-                $this->tabs->setTabActive('edit');
+                self::dic()->tabs()->activateTab('edit');
                 break;
             case 'agreed':
                 $this->agreed();
-                $this->tabs->setTabActive('agreed');
+                self::dic()->tabs()->activateTab('agreed');
                 break;
             case 'update':
                 $this->update();
@@ -116,16 +77,14 @@ class ilObjConsentGUI extends ilObjectPluginGUI
 
 
     /**
-     * @param ilObjConsent $consent
+     * @param ilObject $consent
      */
-    function afterSave(ilObjConsent $consent)
+    function afterSave(ilObject $consent)
     {
-        global $ilAppEventHandler;
-        /** @var $ilAppEventHandler ilAppEventHandler */
-        $ilAppEventHandler->raise(
+        self::dic()->appEventHandler()->raise(
             'Services/Object',
             'afterSave',
-            array('object' => $consent, 'obj_id' => $consent->getId(), 'obj_type' => $consent->getType()));
+            ['object' => $consent, 'obj_id' => $consent->getId(), 'obj_type' => $consent->getType()]);
 
         parent::afterSave($consent);
     }
@@ -137,10 +96,10 @@ class ilObjConsentGUI extends ilObjectPluginGUI
      */
     public function setTabs()
     {
-        $this->tabs->addTab('content', $this->txt('content'), $this->ctrl->getLinkTarget($this, 'index'));
-        if ($this->access->checkAccess('write', '', $this->object->getRefId())) {
-            $this->tabs->addTab('agreed', $this->txt('tab_agreed'), $this->ctrl->getLinkTarget($this, 'agreed'));
-            $this->tabs->addTab('edit', $this->txt('xcon_edit'), $this->ctrl->getLinkTarget($this, 'edit'));
+        self::dic()->tabs()->addTab('content', $this->txt('content'), self::dic()->ctrl()->getLinkTarget($this, 'index'));
+        if (self::dic()->access()->checkAccess('write', '', $this->object->getRefId())) {
+            self::dic()->tabs()->addTab('agreed', $this->txt('tab_agreed'), self::dic()->ctrl()->getLinkTarget($this, 'agreed'));
+            self::dic()->tabs()->addTab('edit', $this->txt('xcon_edit'), self::dic()->ctrl()->getLinkTarget($this, 'edit'));
         }
         $this->addInfoTab();
         $this->addPermissionTab();
@@ -152,12 +111,11 @@ class ilObjConsentGUI extends ilObjectPluginGUI
      */
     protected function index()
     {
-        $tpl = $this->pl->getTemplate('default/tpl.consent_index.html');
-        include_once("./Services/UIComponent/Panel/classes/class.ilPanelGUI.php");
+        $tpl = self::plugin()->template('default/tpl.consent_index.html');
         $panel = ilPanelGUI::getInstance();
         $panel->setBody(nl2br($this->object->getLongDescription()));
         $tpl->setVariable('DESCRIPTION', $panel->getHTML());
-        $tpl->setVariable('FORM_ACTION', $this->ctrl->getFormAction($this));
+        $tpl->setVariable('FORM_ACTION', self::dic()->ctrl()->getFormAction($this));
         $button = ilSubmitButton::getInstance();
         $button->setCommand('accept');
         $user_consent = $this->getUserConsent();
@@ -167,7 +125,7 @@ class ilObjConsentGUI extends ilObjectPluginGUI
         }
         $button->setCaption($caption, false);
         $tpl->setVariable('BUTTON', $button->render());
-        $this->tpl->setContent($tpl->get());
+        self::dic()->ui()->mainTemplate()->setContent($tpl->get());
     }
 
 
@@ -176,12 +134,12 @@ class ilObjConsentGUI extends ilObjectPluginGUI
      */
     protected function agreed()
     {
-        if (!$this->access->checkAccess('write', '', $this->object->getRefId())) {
+        if (!self::dic()->access()->checkAccess('write', '', $this->object->getRefId())) {
             $this->index();
             return;
         }
         $table = new xconAgreedUsersTable($this, 'agreed', $this->object);
-        $this->tpl->setContent($table->getHTML());
+        self::dic()->ui()->mainTemplate()->setContent($table->getHTML());
     }
 
 
@@ -197,8 +155,8 @@ class ilObjConsentGUI extends ilObjectPluginGUI
         } else {
             ilUtil::sendFailure($this->txt('msg_error_accepted'), true);
         }
-        $this->ctrl->setParameterByClass('ilObjCourseGUI', 'ref_id', $this->parent_id);
-        $this->ctrl->redirectByClass(array('ilRepositoryGUI', 'ilObjCourseGUI'));
+        self::dic()->ctrl()->setParameterByClass('ilObjCourseGUI', 'ref_id', $this->parent_id);
+        self::dic()->ctrl()->redirectByClass(['ilRepositoryGUI', 'ilObjCourseGUI']);
     }
 
 
@@ -218,13 +176,13 @@ class ilObjConsentGUI extends ilObjectPluginGUI
      */
     protected function getUserConsent()
     {
-        $user_consent = xconUserConsent::where(array(
-            'user_id' => $this->user->getId(),
-            'obj_id' => $this->object->getId()))
+        $user_consent = xconUserConsent::where([
+            'user_id' => self::dic()->user()->getId(),
+            'obj_id' => $this->object->getId()])
             ->first();
         if (!$user_consent) {
             $user_consent = new xconUserConsent();
-            $user_consent->setUserId($this->user->getId());
+            $user_consent->setUserId(self::dic()->user()->getId());
             $user_consent->setObjId($this->object->getId());
             $user_consent->setCourseObjId($this->object->getCourse()->getId());
         }
@@ -263,10 +221,8 @@ class ilObjConsentGUI extends ilObjectPluginGUI
     public function initCreateForm($a_new_type)
     {
         // Consent object must exist in course!
-        if (ilObject::_lookupType((int) $_GET['ref_id'], true) != 'crs') {
-//            throw new ilException($this->pl->txt('msg_exception_no_crs'));
-            ilUtil::sendFailure($this->pl->txt('msg_error_no_crs'));
-            require_once('./Services/Form/classes/class.ilPropertyFormGUI.php');
+        if (ilObject::_lookupType((int) filter_input(INPUT_GET, "ref_id"), true) != 'crs') {
+            ilUtil::sendFailure(self::plugin()->translate('msg_error_no_crs'));
             $form = new ilPropertyFormGUI();
         } else {
             $form = parent::initCreateForm($a_new_type);
